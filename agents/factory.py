@@ -10,7 +10,7 @@ _CREATORS = {
     SubAgentType.EXPLORE: create_explore_agent,
     SubAgentType.CODE: create_code_agent,
     SubAgentType.SHELL: create_shell_agent,
-    SubAgentType.GENERAL: create_code_agent,
+    SubAgentType.GENERAL: create_explore_agent,
 }
 
 

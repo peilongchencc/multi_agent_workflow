@@ -1,12 +1,14 @@
 """探索型子 Agent — 专注于文件系统探索和信息收集。
 
-只配备只读工具（read_file, list_directory, search_files），
-不具备写入能力，安全地探索工作空间。
+配备只读文件工具（read_file, list_directory, search_files）
+以及联网工具（web_search, web_parser），能够探索工作空间并检索网络信息。
 """
 from agents.base import BaseAgent
+from config import DASHSCOPE_API_KEY
 from prompts import EXPLORE_AGENT_PROMPT
 from tools.file_tools import ListDirectoryTool, ReadFileTool, SearchFilesTool
 from tools.registry import ToolRegistry
+from tools.web_tools import WebParserTool, WebSearchTool
 
 
 def create_explore_agent() -> BaseAgent:
@@ -15,6 +17,10 @@ def create_explore_agent() -> BaseAgent:
     registry.register(ReadFileTool())
     registry.register(ListDirectoryTool())
     registry.register(SearchFilesTool())
+
+    if DASHSCOPE_API_KEY:
+        registry.register(WebSearchTool())
+        registry.register(WebParserTool())
 
     return BaseAgent(
         agent_type="explore",

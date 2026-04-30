@@ -65,7 +65,9 @@ multi_agent_workflow/
 ├── tools/
 │   ├── registry.py         # 工具注册表
 │   ├── file_tools.py       # 文件操作工具
-│   └── shell_tools.py      # Shell 命令工具
+│   ├── shell_tools.py      # Shell 命令工具
+│   ├── web_tools.py        # 联网搜索/网页解析工具
+│   └── mcp_client.py       # MCP HTTP 协议客户端
 ├── docs/
 │   └── mcp_learning_guide.md  # MCP 学习指南
 ├── .cursor/
@@ -180,6 +182,12 @@ curl -X POST http://localhost:8000/chat \
 ```
 工作流: explore(遍历目录和文件)
 
+**场景 4: 联网搜索**
+```json
+{"message": "联网搜索一下 FastAPI 的最新版本是多少"}
+```
+工作流: explore(联网搜索) → 结果汇总
+
 ## 配置说明
 
 所有配置通过 `.env` 文件或环境变量设置:
@@ -194,32 +202,26 @@ curl -X POST http://localhost:8000/chat \
 | MAX_AGENT_ITERATIONS | 10 | 单个Agent最大迭代次数 |
 | WORKSPACE_DIR | ./workspace | 工作空间目录 |
 | LOG_LEVEL | INFO | 日志级别 |
+| DASHSCOPE_API_KEY | (默认使用 LLM_API_KEY) | 阿里云百炼 API Key（联网搜索） |
+| IQS_API_KEY | (可选) | 阿里云 IQS API Key（网页解析） |
 
-## MCP 配置
+## 联网能力
 
-项目集成了 5 个 MCP Server（配置文件：`.cursor/mcp.json`），用于增强 Cursor IDE 中的 AI 能力。
+项目的 explore Agent 集成了阿里云百炼 MCP 联网搜索服务，**部署到服务器后也能联网搜索**。
 
-### 本地 MCP Server（免费，无需 API Key）
+### 运行时联网工具（项目代码内置）
 
-| 名称 | 功能 | 安装方式 |
+通过 `tools/mcp_client.py` 直接调用阿里云 MCP Server 的 HTTP 端点，无需安装额外依赖。
+
+| 工具 | 功能 | 所需配置 |
 |------|------|----------|
-| filesystem | 文件读写、目录浏览、文件搜索 | npx（自动） |
-| memory | 基于知识图谱的持久化记忆 | npx（自动） |
-| fetch | 抓取网页内容并转为 Markdown | pip install mcp-server-fetch |
+| web_search | 联网搜索实时信息 | `LLM_API_KEY`（百炼 Key 即可） |
+| read_page | 网页内容解析 | `IQS_API_KEY`（可选，需单独申请） |
 
-### 远程 MCP Server（阿里云百炼，限时免费，每月 2000 次）
+> 联网搜索使用的是百炼 API Key（与 LLM 调用相同），无需额外申请。限时免费，每月 2000 次。
 
-| 名称 | 功能 | 端点 |
-|------|------|------|
-| aliyun-web-search | 实时联网搜索 | dashscope.aliyuncs.com |
-| aliyun-read-page | 网页解析（静态+动态渲染） | iqs-mcp.aliyuncs.com |
+### Cursor IDE MCP 配置（仅开发环境）
 
-> 远程 MCP Server 需要百炼通用 API Key（`sk-xxx` 格式），配置在 `.cursor/mcp.json` 中。
-
-### MCP 配置生效方式
-
-1. 编辑 `.cursor/mcp.json`，填入 API Key
-2. 完全退出 Cursor 并重新打开
-3. 在 Cursor Settings → MCP 中确认状态为绿色
+项目还在 `.cursor/mcp.json` 中配置了 MCP Server，用于增强 Cursor IDE 中的 AI 能力（仅在本地开发时生效，不影响服务器部署）。
 
 详细的 MCP 学习资料请参考 [MCP 学习指南](docs/mcp_learning_guide.md)。

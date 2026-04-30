@@ -22,3 +22,14 @@ WORKSPACE_DIR.mkdir(parents=True, exist_ok=True)
 
 # 日志配置
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
+
+# 阿里云 MCP 服务配置（联网搜索、网页解析）
+DASHSCOPE_API_KEY = os.getenv("DASHSCOPE_API_KEY", LLM_API_KEY)
+WEBSEARCH_MCP_URL = os.getenv(
+    "WEBSEARCH_MCP_URL",
+    "https://dashscope.aliyuncs.com/api/v1/mcps/WebSearch/mcp",
+)
+WEBPARSER_MCP_URL = os.getenv(
+    "WEBPARSER_MCP_URL",
+    "https://dashscope.aliyuncs.com/api/v1/mcps/WebParser/sse",
+)
