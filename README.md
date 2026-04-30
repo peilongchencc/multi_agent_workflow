@@ -66,50 +66,62 @@ multi_agent_workflow/
 │   ├── registry.py         # 工具注册表
 │   ├── file_tools.py       # 文件操作工具
 │   └── shell_tools.py      # Shell 命令工具
+├── docs/
+│   └── mcp_learning_guide.md  # MCP 学习指南
+├── .cursor/
+│   └── mcp.json            # MCP Server 配置
 └── workspace/
     └── sample_data.csv     # 示例数据
 ```
 
 ## 快速开始
 
-### 1. 安装依赖
+### 1. 创建 Conda 环境
+
+```bash
+conda create -n agentsflow python=3.11 -y
+conda activate agentsflow
+```
+
+### 2. 安装依赖
 
 ```bash
 cd multi_agent_workflow
 pip install -r requirements.txt
 ```
 
-### 2. 配置 API Key
+### 3. 配置环境变量
 
 ```bash
 cp .env.example .env
 ```
 
-编辑 `.env` 文件，填入你的 API Key:
+编辑 `.env` 文件，填入你的 API Key。当前项目使用阿里云百炼（DashScope）：
 
 ```env
 LLM_API_KEY=sk-your-api-key-here
-LLM_BASE_URL=https://api.openai.com/v1
-LLM_MODEL=gpt-4o
+LLM_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
+LLM_MODEL=qwen3.6-plus
 ```
 
 > 支持所有兼容 OpenAI API 格式的服务商（OpenAI、DeepSeek、通义千问等），只需修改 `LLM_BASE_URL` 和 `LLM_MODEL`。
 
-### 3. 启动服务
+### 4. 启动服务
 
 ```bash
-uvicorn main:app --reload --port 8000
+conda activate agentsflow
+uvicorn main:app --host 0.0.0.0 --port 8000
 ```
 
-### 4. 发送请求
+### 5. 发送请求
 
 ```bash
 curl -X POST http://localhost:8000/chat \
   -H "Content-Type: application/json" \
-  -d '{
-    "message": "帮我分析 workspace 中的 sample_data.csv，生成一个统计报告脚本"
-  }'
+  -d '{"message": "帮我分析 workspace 中的 sample_data.csv，生成一个统计报告脚本"}'
 ```
+
+访问 `http://localhost:8000/docs` 可查看 Swagger 交互式文档。
 
 ## API 说明
 
@@ -175,10 +187,39 @@ curl -X POST http://localhost:8000/chat \
 | 配置项 | 默认值 | 说明 |
 |--------|--------|------|
 | LLM_API_KEY | (必填) | LLM API 密钥 |
-| LLM_BASE_URL | https://api.openai.com/v1 | API 基础 URL |
-| LLM_MODEL | gpt-4o | 使用的模型 |
+| LLM_BASE_URL | https://dashscope.aliyuncs.com/compatible-mode/v1 | API 基础 URL |
+| LLM_MODEL | qwen3.6-plus | 使用的模型 |
 | LLM_MAX_TOKENS | 4096 | 最大生成 token 数 |
 | LLM_TEMPERATURE | 0.7 | 温度参数 |
 | MAX_AGENT_ITERATIONS | 10 | 单个Agent最大迭代次数 |
 | WORKSPACE_DIR | ./workspace | 工作空间目录 |
 | LOG_LEVEL | INFO | 日志级别 |
+
+## MCP 配置
+
+项目集成了 5 个 MCP Server（配置文件：`.cursor/mcp.json`），用于增强 Cursor IDE 中的 AI 能力。
+
+### 本地 MCP Server（免费，无需 API Key）
+
+| 名称 | 功能 | 安装方式 |
+|------|------|----------|
+| filesystem | 文件读写、目录浏览、文件搜索 | npx（自动） |
+| memory | 基于知识图谱的持久化记忆 | npx（自动） |
+| fetch | 抓取网页内容并转为 Markdown | pip install mcp-server-fetch |
+
+### 远程 MCP Server（阿里云百炼，限时免费，每月 2000 次）
+
+| 名称 | 功能 | 端点 |
+|------|------|------|
+| aliyun-web-search | 实时联网搜索 | dashscope.aliyuncs.com |
+| aliyun-read-page | 网页解析（静态+动态渲染） | iqs-mcp.aliyuncs.com |
+
+> 远程 MCP Server 需要百炼通用 API Key（`sk-xxx` 格式），配置在 `.cursor/mcp.json` 中。
+
+### MCP 配置生效方式
+
+1. 编辑 `.cursor/mcp.json`，填入 API Key
+2. 完全退出 Cursor 并重新打开
+3. 在 Cursor Settings → MCP 中确认状态为绿色
+
+详细的 MCP 学习资料请参考 [MCP 学习指南](docs/mcp_learning_guide.md)。

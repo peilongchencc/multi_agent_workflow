@@ -23,3 +23,6 @@ rad.json
 TestResults.xml
 **/__pycache__
 **/.DS_Store
+.env
+.cursor/
+logs/
